@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Guitar Interpreter</title>
+  <style>
+    :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --text: #f8fafc; --muted: #94a3b8; --border: #334155; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 2rem; }
+    .container { width: 100%; max-width: 800px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    h1 { font-size: 1.25rem; }
+    button { background: var(--accent); color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    textarea, pre { width: 100%; font-family: monospace; font-size: 0.9rem; border-radius: 8px; border: 1px solid var(--border); background: #090d16; color: #e2e8f0; padding: 1rem; }
+    textarea { height: 180px; resize: vertical; margin-bottom: 1rem; outline: none; }
+    .output-label { font-size: 0.8rem; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    pre { min-height: 100px; white-space: pre-wrap; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Guitar Interpreter</h1>
+      <button onclick="runCode()">Run</button>
+    </header>
+    <textarea id="code" placeholder="Enter source code..."></textarea>
+    <div class="output-label">Output</div>
+    <pre id="output"></pre>
+  </div>
+  <script>
+    function runCode() {
+      const source = document.getElementById('code').value;
+      const outputEl = document.getElementById('output');
+      outputEl.textContent = '';
+
+      // 20 frets, 6 strings each
+      let board = Array.from({ length: 20 }, () => [0, 0, 0, 0, 0, 0]);
+      let fret = 0; // 0 to 19
+      let string = 0; // 0 to 5
+      let strumVal = 1;
+      let out = "";
+
+      const lines = source.split('\n');
+      for (let line of lines) {
+        let cmd = line.trim();
+        if (!cmd || cmd === "Start writing the song" || cmd === "Play the song") continue;
+
+        if (cmd === "Next string") {
+          string = Math.min(5, string + 1);
+        } else if (cmd === "Last string") {
+          string = Math.max(0, string - 1);
+        } else if (cmd === "Strum string") {
+          board[fret][string] += strumVal;
+        } else if (cmd === "Mute string") {
+          board[fret][string] -= 1;
+        } else if (cmd === "Next frett") {
+          fret = Math.min(19, fret + 1);
+        } else if (cmd === "Last frett") {
+          fret = Math.max(0, fret - 1);
+        } else if (cmd === "Tune") {
+          let val = prompt("Enter tuning addition value for Strum string:");
+          strumVal = parseInt(val, 10) || 1;
+        } else if (cmd === "Write music sheet") {
+          for (let f = 0; f < 20; f++) {
+            for (let s = 0; s < 6; s++) {
+              out += String.fromCharCode(board[f][s]);
+            }
+          }
+        }
+      }
+      outputEl.textContent = out;
+    }
+  </script>
+</body>
+</html>
